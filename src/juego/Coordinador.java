@@ -3,8 +3,11 @@ package juego;
 import multimedia.*;
 
 import java.util.ArrayList;
+import java.util.List;
 
 public class Coordinador implements Dibujable {
+    private List<Nivel> niveles;
+    private int nivelActual;
     private EstadoJuego estado;
     private Mapa mapa;
     private Pacman pacman;
@@ -15,12 +18,17 @@ public class Coordinador implements Dibujable {
     public Coordinador(Lienzo lienzo, Teclado teclado) {
         this.lienzo = lienzo;
         this.teclado = teclado;
+        this.niveles = Nivel.crearNiveles();
+        this.nivelActual = 0;
 
+        iniciarNivel(niveles.get(nivelActual));
+    }
+
+    private void iniciarNivel(Nivel nivel) {
         estado = new EstadoJuego(lienzo);
         mapa = new Mapa(lienzo);
-
+        mapa.cargarNivel(nivel);
         situarActores();
-        mapa.generarPuntos();
     }
 
     public void setLienzo(Lienzo lienzo) {
@@ -29,8 +37,10 @@ public class Coordinador implements Dibujable {
 
     private void situarActores() {
         pacman = new Pacman(this, lienzo, teclado, mapa, estado);
+        fantasmas.clear();
 
-        for (int i = 0; i < 3; i++) {
+        Nivel nivelActual = niveles.get(this.nivelActual);
+        for (int i = 0; i < nivelActual.getNumeroFantasmas(); i++) {
             fantasmas.add(new Fantasma(this, lienzo, pacman, mapa));
         }
     }
@@ -47,6 +57,10 @@ public class Coordinador implements Dibujable {
         return true;
     }
 
+    public EstadoJuego getEstado() {
+        return this.estado;
+    }
+
     public Posicion obtenerPosicionVaciaAleatoria() {
         Posicion posicion;
 
@@ -57,12 +71,21 @@ public class Coordinador implements Dibujable {
         return posicion;
     }
 
-    public void tick() throws PacmanComidoException, SalirDelJuegoException {
+    public void tick() throws PacmanComidoException, SalirDelJuegoException, NivelCompletadoException, JuegoCompletadoException {
         pacman.tick();
 
         if (mapa.hayPunto(pacman.getPosicion())) {
             estado.incrementarPuntuacion();
             mapa.retirarPunto(pacman.getPosicion());
+
+            if (!mapa.quedanMonedas()) {
+                nivelActual++;
+                if (nivelActual < niveles.size()) {
+                    throw new NivelCompletadoException("¡Nivel " + (nivelActual) + " completado!");
+                } else {
+                    throw new JuegoCompletadoException("¡Has completado todos los niveles!");
+                }
+            }
         }
 
         for (Fantasma fantasma : fantasmas) {
@@ -83,5 +106,17 @@ public class Coordinador implements Dibujable {
         estado.dibujar();
 
         lienzo.volcar();
+    }
+
+    public int getNivelActual() {
+        return this.nivelActual;
+    }
+
+    public void pasarSiguienteNivel() {
+        if (nivelActual < niveles.size()) {
+            nivelActual++;
+            iniciarNivel(niveles.get(nivelActual));
+            situarActores();
+        }
     }
 }

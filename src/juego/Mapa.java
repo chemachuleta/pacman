@@ -8,38 +8,21 @@ import java.io.File;
 import java.io.IOException;
 
 public class Mapa implements Dibujable {
-    // TODO Habrá que quitar todo esto de los colores. En su lugar quedarán las imágenes.
     private static final Color COLOR_SUELO = Color.BLACK;
+    private static final int TAM_CELDA = 32;
     private Image imagenMuro;
     private Image imagenMoneda;
-
-    private final char[][] mapa = {
-            {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', '#', '#', ' ', '#', '#', ' ', '#', '#', ' ', '#', '#', ' ', '#'},
-            {'#', ' ', '#', '#', ' ', '#', '#', ' ', '#', '#', ' ', '#', '#', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', ' ', '#', '#', ' ', '#', '#', '#', '#', '#', ' ', '#', '#', ' ', '#'},
-            {'#', ' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#', ' ', '#'},
-            {'#', ' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#', ' ', '#'},
-            {'#', ' ', ' ', ' ', '#', '#', ' ', ' ', ' ', '#', '#', ' ', ' ', ' ', '#'},
-            {'#', ' ', '#', ' ', '#', '#', ' ', ' ', ' ', '#', '#', ' ', '#', ' ', '#'},
-            {'#', ' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#', ' ', '#'},
-            {'#', ' ', '#', ' ', ' ', ' ', ' ', '#', ' ', ' ', ' ', ' ', '#', ' ', '#'},
-            {'#', ' ', '#', '#', ' ', '#', '#', '#', '#', '#', ' ', '#', '#', ' ', '#'},
-            {'#', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', '#'},
-            {'#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#', '#'}
-    };
-
     private Lienzo lienzo;
+    private char[][] mapa;
+
 
     public Mapa(Lienzo lienzo) {
         setLienzo(lienzo);
-
         try {
             this.imagenMuro = ImageIO.read(new File("src/assets/Muro32.png"));
-            this.imagenMoneda = ImageIO.read(new File("src/assets/Moneda32.png"));
-        } catch (IOException e){
+            Image monedaOriginal = ImageIO.read(new File("src/assets/Moneda32.png"));
+            this.imagenMoneda = monedaOriginal.getScaledInstance(16, 16, Image.SCALE_SMOOTH);
+        } catch (IOException e) {
             throw new RuntimeException("No se puede cargar la imagen: " + e);
         }
     }
@@ -52,13 +35,15 @@ public class Mapa implements Dibujable {
         return mapa[1].length;
     }
 
+    public void cargarNivel(Nivel nivel) {
+        this.mapa = nivel.getDiseño();
+        generarPuntos();
+    }
+
     public int getAlto() {
         return mapa.length;
     }
 
-    // Estos get y set son para "traducir" el sistema de coordenadas x, y que se utiliza
-    // a lo largo de todo el programa, al sistema de coordenadas de filas y columnas
-    // que se utiliza en la matriz de chars.
 
     private char getContenidoMapa(int x, int y) {
         return mapa[y][x];
@@ -102,18 +87,44 @@ public class Mapa implements Dibujable {
         return getContenidoMapa(posicion) == '·';
     }
 
+    public boolean quedanMonedas() {
+        for (int x = 0; x < getAncho(); x++) {
+            for (int y = 0; y < getAlto(); y++) {
+                if (getContenidoMapa(x, y) == '·') {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
     public void retirarPunto(Posicion posicion) {
         setContenidoMapa(posicion, ' ');
     }
 
     public void dibujar() {
+        lienzo.limpiar();
+
         for (int x = 0; x < getAncho(); x++) {
             for (int y = 0; y < getAlto(); y++) {
                 lienzo.marcarPixel(x, y, COLOR_SUELO);
 
-                if (getContenidoMapa(x, y) == '#') lienzo.dibujarImagen(x, y, this.imagenMuro);
-                else if (getContenidoMapa(x, y) == '·') lienzo.dibujarImagen(x, y, this.imagenMoneda);
+                if (getContenidoMapa(x, y) == '#') {
+                    lienzo.dibujarImagen(x, y, this.imagenMuro);
+                } else if (getContenidoMapa(x, y) == '·') {
+                    dibujarMonedaCentrada(x, y);
+                }
             }
         }
+    }
+
+    private void dibujarMonedaCentrada(int celdaX, int celdaY) {
+        int anchoMoneda = imagenMoneda.getWidth(null);
+        int altoMoneda = imagenMoneda.getHeight(null);
+        int posXPixel = celdaX * TAM_CELDA + (TAM_CELDA - anchoMoneda) / 2;
+        int posYPixel = celdaY * TAM_CELDA + (TAM_CELDA - altoMoneda) / 2;
+
+        Graphics2D g = ((VentanaMultimedia)lienzo).getGraphics2D();
+        g.drawImage(imagenMoneda, posXPixel, posYPixel, null);
     }
 }

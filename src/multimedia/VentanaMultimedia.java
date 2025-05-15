@@ -27,6 +27,10 @@ public class VentanaMultimedia extends JFrame implements Lienzo {
 
 	private Teclado teclado = new Teclado();
 
+    public Graphics2D getGraphics2D() {
+        return this.imagenG2D;
+    }
+
 	public VentanaMultimedia(String tituloVentana, int ancho, int alto, int tamPixel, Color colorFondo) {
 		super(tituloVentana);
 
