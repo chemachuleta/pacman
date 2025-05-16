@@ -13,7 +13,7 @@ public class Pacman extends Actor {
         super("Pacman32.png", coordinador, lienzo, mapa);
         this.estado = estado;
         this.teclado = teclado;
-        this.posicion = new Posicion(7, 8);
+        this.posicion = new Posicion(7, 9);
         this.mapa = mapa;
     }
 

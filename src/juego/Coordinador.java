@@ -24,12 +24,6 @@ public class Coordinador implements Dibujable {
         iniciarNivel(niveles.get(nivelActual));
     }
 
-    private void iniciarNivel(Nivel nivel) {
-        estado = new EstadoJuego(lienzo);
-        mapa = new Mapa(lienzo);
-        mapa.cargarNivel(nivel);
-        situarActores();
-    }
 
     public void setLienzo(Lienzo lienzo) {
         this.lienzo = lienzo;
@@ -79,13 +73,13 @@ public class Coordinador implements Dibujable {
             mapa.retirarPunto(pacman.getPosicion());
 
             if (!mapa.quedanMonedas()) {
-                nivelActual++;
-                if (nivelActual < niveles.size()) {
-                    throw new NivelCompletadoException("¡Nivel " + (nivelActual) + " completado!");
+                if (nivelActual + 1 < niveles.size()) {
+                    throw new NivelCompletadoException("¡Nivel " + (nivelActual + 1) + " completado!");
                 } else {
-                    throw new JuegoCompletadoException("¡Has completado todos los niveles!");
+                    throw new JuegoCompletadoException("¡Juego completado!");
                 }
             }
+
         }
 
         for (Fantasma fantasma : fantasmas) {
@@ -112,11 +106,23 @@ public class Coordinador implements Dibujable {
         return this.nivelActual;
     }
 
-    public void pasarSiguienteNivel() {
-        if (nivelActual < niveles.size()) {
-            nivelActual++;
-            iniciarNivel(niveles.get(nivelActual));
-            situarActores();
+    public int getCantNiveles(){
+        return this.niveles.size();
+    }
+
+    public void pasarSiguienteNivel() throws JuegoCompletadoException {
+        nivelActual++;
+        if (nivelActual >= niveles.size()) {
+            throw new JuegoCompletadoException("¡Juego completado!");
         }
+        iniciarNivel(niveles.get(nivelActual));
+        situarActores();
+    }
+
+    private void iniciarNivel(Nivel nivel) {
+        estado = new EstadoJuego(lienzo);
+        mapa = new Mapa(lienzo);
+        mapa.cargarNivel(nivel);
+        situarActores();
     }
 }

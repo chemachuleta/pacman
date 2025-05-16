@@ -22,7 +22,6 @@ public class Principal {
 
         VentanaMultimedia ventana = new VentanaMultimedia("PacMan", anchoVentana, altoVentana, TAM_PIXEL, colorFondo);
         Coordinador coordinador = new Coordinador(ventana, ventana.getTeclado());
-
         try {
             while (true) {
                 coordinador.dibujar();
@@ -32,16 +31,18 @@ public class Principal {
             }
         } catch (NivelCompletadoException e) {
             System.out.println(e.getMessage());
-            coordinador.pasarSiguienteNivel();
-        } catch (JuegoCompletadoException e) {
-            System.out.println(e.getMessage());
-            System.out.println("Puntuación final: " + coordinador.getEstado().getPuntuacion());
+            try {
+                coordinador.pasarSiguienteNivel();
+            } catch (JuegoCompletadoException ex) {
+                System.out.println(ex.getMessage());
+                System.out.println("Puntuación final: " + coordinador.getEstado().getPuntuacion());
+            }
         } catch (PacmanComidoException e) {
             System.out.println("¡Game Over! Te han comido.");
         } catch (SalirDelJuegoException e) {
             System.out.println("Has elegido salir del juego.");
-        } finally {
-            coordinador.dibujar();
+        } catch (JuegoCompletadoException e) {
+            System.out.println(e.getMessage());
         }
     }
 }
