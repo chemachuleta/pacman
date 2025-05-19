@@ -46,4 +46,8 @@ public class Posicion {
             case DCH -> new Posicion(x+1, y  );
         };
     }
+
+    public double distanciaA(Posicion otra) {
+        return Math.sqrt(Math.pow(this.x - otra.x, 2) + Math.pow(this.y - otra.y, 2));
+    }
 }

@@ -69,4 +69,6 @@ public class Teclado implements KeyListener, Tickable {
 	public void tick() {
 		procesarEstadosCon1Vez();
 	}
+
+
 }

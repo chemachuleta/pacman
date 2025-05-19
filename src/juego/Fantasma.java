@@ -16,19 +16,24 @@ public class Fantasma extends Actor {
     }
 
     public void tick() throws PacmanComidoException {
-        if (this.posicion.equals(pacman.getPosicion())) throw new PacmanComidoException("¡Pacman ha sido comido!");
+        if (this.posicion.equals(pacman.getPosicion())) {
+            throw new PacmanComidoException("¡Pacman ha sido comido!");
+        }
 
         boolean movido = false;
-
-        while (!movido) {
+        int intentos = 0;
+        while (!movido && intentos < 4) {
             try {
                 Direccion dir = Direccion.values()[random.nextInt(4)];
                 mover(dir);
                 movido = true;
             } catch (MovimientoInvalidoException ignored) {
+                intentos++;
             }
         }
 
-        if (this.posicion.equals(pacman.getPosicion())) throw new PacmanComidoException("¡Pacman ha sido comido!");
+        if (this.posicion.equals(pacman.getPosicion())) {
+            throw new PacmanComidoException("¡Pacman ha sido comido!");
+        }
     }
 }

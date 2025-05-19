@@ -24,24 +24,30 @@ public class Principal {
         Coordinador coordinador = new Coordinador(ventana, ventana.getTeclado());
 
         try {
-            while (true) {
-                coordinador.dibujar();
-                ventana.getTeclado().tick();
-                coordinador.tick();
-                espera(MILLIS);
+            boolean juegoActivo = true;
+            while (juegoActivo) {
+                try {
+                    coordinador.dibujar();
+                    ventana.getTeclado().tick();
+                    coordinador.tick();
+                    espera(MILLIS);
+                } catch (PacmanComidoException e) {
+                    System.out.println(e.getMessage());
+                    juegoActivo = false; // Salir del bucle principal
+                } catch (NivelCompletadoException e) {
+                    System.out.println(e.getMessage());
+                    coordinador.pasarSiguienteNivel();
+                } catch (JuegoCompletadoException e) {
+                    System.out.println(e.getMessage());
+                    System.out.println("Puntuación final: " + coordinador.getEstado().getPuntuacion());
+                    juegoActivo = false;
+                } catch (SalirDelJuegoException e) {
+                    System.out.println(e.getMessage());
+                    juegoActivo = false;
+                }
             }
-        } catch (NivelCompletadoException e) {
-            System.out.println(e.getMessage());
-            coordinador.pasarSiguienteNivel();
-        } catch (JuegoCompletadoException e) {
-            System.out.println(e.getMessage());
-            System.out.println("Puntuación final: " + coordinador.getEstado().getPuntuacion());
-        } catch (PacmanComidoException e) {
-            System.out.println("¡Game Over! Te han comido.");
-        } catch (SalirDelJuegoException e) {
-            System.out.println("Has elegido salir del juego.");
         } finally {
-            coordinador.dibujar();
+            System.out.println("Juego terminado");
         }
     }
 }
