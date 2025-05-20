@@ -25,6 +25,10 @@ public class EstadoJuego implements Dibujable {
         puntuacion++;
     }
 
+    public void incrementarPuntuacion(int puntos) {
+        this.puntuacion += puntos;
+    }
+
     public void setLienzo(Lienzo lienzo) {
         this.lienzo = lienzo;
     }

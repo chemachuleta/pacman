@@ -6,6 +6,7 @@ import javax.imageio.ImageIO;
 import java.awt.*;
 import java.io.File;
 import java.io.IOException;
+import java.util.Random;
 
 public class Mapa implements Dibujable {
     private static final Color COLOR_SUELO = Color.BLACK;
@@ -25,6 +26,19 @@ public class Mapa implements Dibujable {
         } catch (IOException e) {
             throw new RuntimeException("No se puede cargar la imagen: " + e);
         }
+    }
+
+    public Posicion obtenerPosicionVaciaAleatoria() {
+        Random random = new Random();
+        Posicion posicion;
+        int intentos = 0;
+
+        do {
+            posicion = new Posicion(random.nextInt(getAncho()), random.nextInt(getAlto()));
+            intentos++;
+        } while ((!esTransitable(posicion) && intentos < 50));
+
+        return esTransitable(posicion) ? posicion : null;
     }
 
     public void setLienzo(Lienzo lienzo) {

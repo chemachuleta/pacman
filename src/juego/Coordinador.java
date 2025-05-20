@@ -10,6 +10,9 @@ import java.util.Random;
 public class Coordinador implements Dibujable {
     private List<Nivel> niveles;
     private int nivelActual;
+    private List<ObjetoEspecial> objetosEspeciales;
+    private int ticksUltimoObjeto;
+    private static final int INTERVALO_OBJETOS = 1000;
     private EstadoJuego estado;
     private Mapa mapa;
     private Pacman pacman;
@@ -24,6 +27,11 @@ public class Coordinador implements Dibujable {
         this.nivelActual = 0;
 
         iniciarNivel(niveles.get(nivelActual));
+
+        objetosEspeciales = new ArrayList<>();
+        objetosEspeciales.add(new ObjetoEspecial("Cereza32.png", 100, mapa));
+        objetosEspeciales.add(new ObjetoEspecial("Manzana32.png", 200, mapa));
+        ticksUltimoObjeto = 0;
     }
 
     public void setLienzo(Lienzo lienzo) {
@@ -41,7 +49,6 @@ public class Coordinador implements Dibujable {
     }
 
     private void situarActores() {
-        // Posicionar Pacman en una ubicación válida
         Posicion posicionPacman = obtenerPosicionValidaParaPacman();
         pacman = new Pacman(this, lienzo, teclado, mapa, estado);
         pacman.getPosicion().setX(posicionPacman.getX());
@@ -125,7 +132,6 @@ public class Coordinador implements Dibujable {
     public void tick() throws PacmanComidoException, SalirDelJuegoException,
             NivelCompletadoException, JuegoCompletadoException {
 
-        // Primero verifica colisiones antes de mover
         for (Fantasma fantasma : fantasmas) {
             if (fantasma.getPosicion().equals(pacman.getPosicion())) {
                 throw new PacmanComidoException("¡Game Over!");
@@ -134,14 +140,12 @@ public class Coordinador implements Dibujable {
 
         pacman.tick();
 
-        // Verificación después de mover Pacman
         for (Fantasma fantasma : fantasmas) {
             if (fantasma.getPosicion().equals(pacman.getPosicion())) {
                 throw new PacmanComidoException("¡Game Over!");
             }
         }
 
-        // Lógica de puntos y niveles...
         if (mapa.hayPunto(pacman.getPosicion())) {
             estado.incrementarPuntuacion();
             mapa.retirarPunto(pacman.getPosicion());
@@ -155,9 +159,33 @@ public class Coordinador implements Dibujable {
             }
         }
 
-        // Mover fantasmas y verificar colisiones nuevamente
         for (Fantasma fantasma : fantasmas) {
-            fantasma.tick(); // Esto puede lanzar PacmanComidoException
+            fantasma.tick();
+        }
+
+        ticksUltimoObjeto++;
+        if (ticksUltimoObjeto >= INTERVALO_OBJETOS) {
+            aparecerObjetoAleatorio();
+            ticksUltimoObjeto = 0;
+        }
+
+        for (ObjetoEspecial obj : objetosEspeciales) {
+            obj.tick();
+            if (obj.colisionaPacman(pacman.getPosicion())) {
+                estado.incrementarPuntuacion(obj.getPuntos());
+                obj.visible = false;
+            }
+        }
+    }
+
+    private void aparecerObjetoAleatorio() {
+        if (objetosEspeciales.isEmpty()) return;
+
+        Random rand = new Random();
+        ObjetoEspecial obj = objetosEspeciales.get(rand.nextInt(objetosEspeciales.size()));
+
+        if (!obj.isVisible()) {
+            obj.aparecer();
         }
     }
 
@@ -174,6 +202,10 @@ public class Coordinador implements Dibujable {
         estado.dibujar();
 
         lienzo.volcar();
+
+        for (ObjetoEspecial obj : objetosEspeciales) {
+            obj.dibujar();
+        }
     }
 
     public int getNivelActual() {
@@ -181,12 +213,11 @@ public class Coordinador implements Dibujable {
     }
 
     public void pasarSiguienteNivel() {
-        nivelActual++;  // Primero incrementamos
-        if (nivelActual < niveles.size()) {  // Luego verificamos
+        nivelActual++;
+        if (nivelActual < niveles.size()) {
             iniciarNivel(niveles.get(nivelActual));
             situarActores();
         } else {
-            // Opcional: reiniciar el juego o mostrar mensaje de finalización
             System.out.println("¡Has completado todos los niveles!");
         }
     }

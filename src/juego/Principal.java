@@ -33,7 +33,7 @@ public class Principal {
                     espera(MILLIS);
                 } catch (PacmanComidoException e) {
                     System.out.println(e.getMessage());
-                    juegoActivo = false; // Salir del bucle principal
+                    juegoActivo = false;
                 } catch (NivelCompletadoException e) {
                     System.out.println(e.getMessage());
                     coordinador.pasarSiguienteNivel();
